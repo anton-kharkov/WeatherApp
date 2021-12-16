@@ -11,9 +11,9 @@ public class WeatherEntity {
 
     private String cityName;
 
-    private long temperature;
+    private double temperature;
 
-    public WeatherEntity(long id, String cityName, long temperature) {
+    public WeatherEntity(long id, String cityName, double temperature) {
         this.id = id;
         this.cityName = cityName;
         this.temperature = temperature;
@@ -35,11 +35,11 @@ public class WeatherEntity {
         this.cityName = cityName;
     }
 
-    public long getTemperature() {
+    public double getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(long temperature) {
+    public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 }

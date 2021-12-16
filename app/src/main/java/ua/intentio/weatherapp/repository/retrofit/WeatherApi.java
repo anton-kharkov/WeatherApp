@@ -6,14 +6,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class WeatherApi {
     static final String BASE_URL = "https://api.openweathermap.org/data/2.5/";
 
-    public static WeatherApiService getApi() {
+    public static WeatherApiInterface getApi() {
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        WeatherApiService weatherApiService = retrofit.create(WeatherApiService.class);
-        return weatherApiService;
+        WeatherApiInterface weatherApiInterface = retrofit.create(WeatherApiInterface.class);
+        return weatherApiInterface;
     }
 }
