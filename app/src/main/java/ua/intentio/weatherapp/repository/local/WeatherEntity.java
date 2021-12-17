@@ -3,7 +3,7 @@ package ua.intentio.weatherapp.repository.local;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity
+@Entity(tableName = "weather_entity")
 public class WeatherEntity {
 
     @PrimaryKey

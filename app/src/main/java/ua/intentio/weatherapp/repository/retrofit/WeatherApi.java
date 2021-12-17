@@ -13,7 +13,6 @@ public class WeatherApi {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        WeatherApiInterface weatherApiInterface = retrofit.create(WeatherApiInterface.class);
-        return weatherApiInterface;
+        return retrofit.create(WeatherApiInterface.class);
     }
 }
