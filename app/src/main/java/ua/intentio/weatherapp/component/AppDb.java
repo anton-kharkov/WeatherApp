@@ -25,8 +25,4 @@ public class AppDb extends Application {
     public static AppDb getInstance(){
         return instance;
     }
-
-    public WeatherDatabase getDataBase(){
-        return weatherDatabase;
-    }
 }

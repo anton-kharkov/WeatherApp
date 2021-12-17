@@ -2,13 +2,11 @@ package ua.intentio.weatherapp.view;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,8 +17,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import ua.intentio.weatherapp.R;
-import ua.intentio.weatherapp.repository.local.WeatherEntity;
-import ua.intentio.weatherapp.repository.retrofit.Weather;
 import ua.intentio.weatherapp.viewmodel.WeatherViewModel;
 
 public class MainActivity extends AppCompatActivity {
@@ -65,24 +61,26 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        autoCheckNetworkStatus(); }
+
+    //Automatically check network status every 10 seconds
+    private void autoCheckNetworkStatus() {
         Timer timer = new Timer();
 
-        TimerTask timerTask = new TimerTask() {
+        TimerTask timerTask = new TimerTask(){
             @Override
             public void run() {
-                runOnUiThread(() -> {
-                    checkInternetConnection();
-                });
+                runOnUiThread(() -> checkInternetConnection());
             }
         };
 
-        timer.schedule(timerTask, 0, 10000);
+        timer.schedule(timerTask, 0, 5000);
     }
 
     public void pressGetWeatherButton(View view) {
         String cityName = enterCityName.getText().toString();
 
-        if (!cityName.equals("")) {
+        if (!cityName.isEmpty()) {
             ArrayList<String> cityList = new ArrayList<>(3);
 
             cityList.add(0, "Киев");
@@ -91,38 +89,29 @@ public class MainActivity extends AppCompatActivity {
 
             for (int i = 0; i < 3; ) {
                 weatherViewModel.requestWeatherFromRetrofit(cityList.get(i))
-                        .observe(this, new Observer<Weather>() {
-                            @Override
-                            public void onChanged(Weather weather) {
-                                MutableLiveData<Weather> mutableLiveData = new MutableLiveData<>();
+                        .observe(this, weather -> {
+                            long temp = Math.round(weather.getMain().getTemp());
 
-                                switch (weather.getCityName()) {
-                                    case "Kyiv":
-                                        firstBaseCityView.setText(weather.getCityName());
-                                        firstBaseTempView.setText(
-                                                Long.toString(Math.round(weather.getTemperature()))
-                                        );
-                                        break;
-                                    case "Dnipro":
-                                        secondBaseCityView.setText(weather.getCityName());
-                                        secondBaseTempView.setText(
-                                                Long.toString(Math.round(weather.getTemperature()))
-                                        );
-                                        break;
-                                    default:
-                                        userCityView.setText(weather.getCityName());
-                                        userTempView.setText(
-                                                Long.toString(Math.round(weather.getTemperature()))
-                                        );
-                                }
+                            switch (weather.getCityName()) {
+                                case "Kyiv":
+                                    firstBaseCityView.setText(weather.getCityName());
+                                    firstBaseTempView.setText(temp + "\u2103");
+                                    break;
+                                case "Dnipro":
+                                    secondBaseCityView.setText(weather.getCityName());
+                                    secondBaseTempView.setText(temp + "\u2103");
+                                    break;
+                                default:
+                                    userCityView.setText(weather.getCityName());
+                                    userTempView.setText(temp + "\u2103");
                             }
                         });
-
                 i++;
             }
         }
     }
 
+    //Checking the Internet connection and choosing a way to work
     public void checkInternetConnection() {
 
         ConnectivityManager connectivityManager =
@@ -144,11 +133,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getWeatherByDb() {
-        weatherViewModel.requestWeatherFromDb()
-                .observe(this, new Observer<LiveData<WeatherEntity>>() {
-                    @Override
-                    public void onChanged(LiveData<WeatherEntity> weatherEntityLiveData) {
+        weatherViewModel.requestWeatherFromDb().getAll().observe(this, weatherEntities -> {
+            try {
+                for (int i = 0; i < 3;) {
+                    switch (i) {
+                        case 0:
+                            firstBaseCityView.setText(
+                                    weatherEntities.get(i).getCityName());
+                            firstBaseTempView.setText(Math.round
+                                    (weatherEntities.get(i).getTemperature())
+                                    + "\u2103");
+                            break;
+                        case 1:
+                            secondBaseCityView.setText(
+                                    weatherEntities.get(i).getCityName());
+                            secondBaseTempView.setText(Math.round
+                                    (weatherEntities.get(i).getTemperature())
+                                    + "\u2103");
+                            break;
+                        default:
+                            userCityView.setText(
+                                    weatherEntities.get(i).getCityName());
+                            userTempView.setText(Math.round
+                                    (weatherEntities.get(i).getTemperature())
+                                    + "\u2103");
                     }
-                });
+                    i++;
+                }
+            }catch (Throwable throwable){
+                Log.e("mainGetDb", throwable.toString());
+            }
+    });
     }
 }

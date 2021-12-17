@@ -4,10 +4,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import java.util.ArrayList;
-
 import ua.intentio.weatherapp.repository.WeatherRepo;
-import ua.intentio.weatherapp.repository.local.WeatherEntity;
+import ua.intentio.weatherapp.repository.local.WeatherDao;
 import ua.intentio.weatherapp.repository.retrofit.Weather;
 
 public class WeatherViewModel extends ViewModel {
@@ -26,12 +24,9 @@ public class WeatherViewModel extends ViewModel {
         return mutableLiveData;
     }
 
-    public LiveData<LiveData<WeatherEntity>> requestWeatherFromDb(){
-        MutableLiveData<LiveData<WeatherEntity>> mutableLiveData;
+    public WeatherDao requestWeatherFromDb(){
 
-        mutableLiveData = weatherRepo.requestWeatherFromDb();
-
-        return mutableLiveData;
+        return weatherRepo.requestWeatherFromDb();
     }
 
 

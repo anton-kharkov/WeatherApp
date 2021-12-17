@@ -6,14 +6,14 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import java.util.ArrayList;
+import java.util.List;
 
 
 @Dao
 public interface WeatherDao {
 
-    @Query("SELECT * FROM weather_entity")
-    LiveData<WeatherEntity> getAll();
+    @Query("SELECT * FROM weatherentity")
+    LiveData<List<WeatherEntity>> getAll();
 
     @Insert
     void insert(WeatherEntity weatherEntity);

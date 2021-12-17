@@ -9,23 +9,15 @@ public class Weather {
     @Expose
     private String cityName;
 
-    @SerializedName("temp")
+    @SerializedName("main")
     @Expose
-    private double temperature;
+    private WeatherTemperature weatherTemperature;
 
     public String getCityName() {
         return cityName;
     }
 
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
-    }
-
-    public double getTemperature() {
-        return temperature;
-    }
-
-    public void setTemperature(double temperature) {
-        this.temperature = temperature;
+    public WeatherTemperature getMain() {
+        return weatherTemperature;
     }
 }

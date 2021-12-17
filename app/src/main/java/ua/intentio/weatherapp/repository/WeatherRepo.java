@@ -2,7 +2,7 @@ package ua.intentio.weatherapp.repository;
 
 import android.util.Log;
 
-import androidx.lifecycle.LiveData;
+import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import retrofit2.Call;
@@ -36,13 +36,15 @@ public class WeatherRepo {
         WeatherApiInterface apiService = WeatherApi.getApi();
 
         apiService.getWeatherByCityName(cityName).enqueue(new Callback<Weather>() {
-
+            Thread thread;
             @Override
-            public void onResponse(Call<Weather> call, Response<Weather> response) {
+            public void onResponse(@NonNull Call<Weather> call,
+                                   @NonNull Response<Weather> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Weather weather = response.body();
-                    Thread thread = new Thread(() -> {
+                    thread = new Thread(() -> {
                         addWeatherToDb(weather);
+                        thread.interrupt();
                     });
                     thread.start();
                     mutableLiveData.setValue(weather);
@@ -50,7 +52,7 @@ public class WeatherRepo {
             }
 
             @Override
-            public void onFailure(Call<Weather> call, Throwable t) {
+            public void onFailure(@NonNull Call<Weather> call, @NonNull Throwable t) {
                 Log.e(TAG, "getProdList onFailure" + call.toString());
             }
         });
@@ -59,15 +61,13 @@ public class WeatherRepo {
 
     }
 
-    public MutableLiveData<LiveData<WeatherEntity>> requestWeatherFromDb() {
-        final MutableLiveData<LiveData<WeatherEntity>> mutableLiveData = new MutableLiveData<>();
-        mutableLiveData.setValue(weatherDao.getAll());
-        return mutableLiveData;
+    public WeatherDao requestWeatherFromDb() {
+        return weatherDao;
     }
 
     public void addWeatherToDb(Weather weather) {
         long id;
-        switch (weather.getCityName()){
+        switch (weather.getCityName()) {
             case "Kyiv":
                 id = 1;
                 break;
@@ -79,12 +79,12 @@ public class WeatherRepo {
         }
 
         WeatherEntity weatherEntity = new WeatherEntity(
-                id, weather.getCityName(), weather.getTemperature());
+                id, weather.getCityName(), weather.getMain().getTemp());
 
         try {
-            weatherDao.update(weatherEntity);
-        }catch (Throwable throwable){
             weatherDao.insert(weatherEntity);
+        } catch (Throwable throwable) {
+            weatherDao.update(weatherEntity);
         }
     }
 }
