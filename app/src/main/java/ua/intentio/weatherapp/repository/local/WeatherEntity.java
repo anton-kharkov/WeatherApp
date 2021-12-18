@@ -7,11 +7,11 @@ import androidx.room.PrimaryKey;
 public class WeatherEntity {
 
     @PrimaryKey
-    private long id;
+    private final long id;
 
-    private String cityName;
+    private final String cityName;
 
-    private double temperature;
+    private final double temperature;
 
     public WeatherEntity(long id, String cityName, double temperature) {
         this.id = id;

@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,6 +21,7 @@ import ua.intentio.weatherapp.viewmodel.WeatherViewModel;
 public class MainActivity extends AppCompatActivity {
 
     WeatherViewModel weatherViewModel = new WeatherViewModel();
+    Timer timer;
 
     TextView firstBaseCityView;
     TextView firstBaseTempView;
@@ -54,27 +54,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        checkInternetConnection();
+        autoCheckNetworkStatus();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        autoCheckNetworkStatus(); }
-
-    //Automatically check network status every 10 seconds
-    private void autoCheckNetworkStatus() {
-        Timer timer = new Timer();
-
-        TimerTask timerTask = new TimerTask(){
-            @Override
-            public void run() {
-                runOnUiThread(() -> checkInternetConnection());
-            }
-        };
-
-        timer.schedule(timerTask, 0, 5000);
+    protected void onStop() {
+        super.onStop();
+        timer.cancel();
     }
 
     public void pressGetWeatherButton(View view) {
@@ -83,27 +69,27 @@ public class MainActivity extends AppCompatActivity {
         if (!cityName.isEmpty()) {
             ArrayList<String> cityList = new ArrayList<>(3);
 
-            cityList.add(0, "Киев");
-            cityList.add(1, "Днепр");
-            cityList.add(2, cityName);
+            cityList.add("Киев");
+            cityList.add("Днепр");
+            cityList.add(cityName);
 
-            for (int i = 0; i < 3; ) {
+            for (int i = 0; i < cityList.size(); ) {
                 weatherViewModel.requestWeatherFromRetrofit(cityList.get(i))
                         .observe(this, weather -> {
-                            long temp = Math.round(weather.getMain().getTemp());
+                            double temp = weather.getMain().getTemp();
 
                             switch (weather.getCityName()) {
                                 case "Kyiv":
                                     firstBaseCityView.setText(weather.getCityName());
-                                    firstBaseTempView.setText(temp + "\u2103");
+                                    firstBaseTempView.setText(createTemp(temp));
                                     break;
                                 case "Dnipro":
                                     secondBaseCityView.setText(weather.getCityName());
-                                    secondBaseTempView.setText(temp + "\u2103");
+                                    secondBaseTempView.setText(createTemp(temp));
                                     break;
                                 default:
                                     userCityView.setText(weather.getCityName());
-                                    userTempView.setText(temp + "\u2103");
+                                    userTempView.setText(createTemp(temp));
                             }
                         });
                 i++;
@@ -132,37 +118,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Automatically check network status every 10 seconds
+    private void autoCheckNetworkStatus() {
+        timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(() -> checkInternetConnection());
+            }
+        };
+        timer.schedule(timerTask, 0, 5000);
+    }
+
     public void getWeatherByDb() {
         weatherViewModel.requestWeatherFromDb().getAll().observe(this, weatherEntities -> {
-            try {
-                for (int i = 0; i < 3;) {
+            if (weatherEntities.size() == 3) {
+
+                for (int i = 0; i < weatherEntities.size();) {
+
+                    String cityName = weatherEntities.get(i).getCityName();
+                    double temp = weatherEntities.get(i).getTemperature();
+
                     switch (i) {
                         case 0:
-                            firstBaseCityView.setText(
-                                    weatherEntities.get(i).getCityName());
-                            firstBaseTempView.setText(Math.round
-                                    (weatherEntities.get(i).getTemperature())
-                                    + "\u2103");
+                            firstBaseCityView.setText(cityName);
+                            firstBaseTempView.setText(createTemp(temp));
                             break;
                         case 1:
-                            secondBaseCityView.setText(
-                                    weatherEntities.get(i).getCityName());
-                            secondBaseTempView.setText(Math.round
-                                    (weatherEntities.get(i).getTemperature())
-                                    + "\u2103");
+                            secondBaseCityView.setText(cityName);
+                            secondBaseTempView.setText(createTemp(temp));
                             break;
                         default:
-                            userCityView.setText(
-                                    weatherEntities.get(i).getCityName());
-                            userTempView.setText(Math.round
-                                    (weatherEntities.get(i).getTemperature())
-                                    + "\u2103");
+                            userCityView.setText(cityName);
+                            userTempView.setText(createTemp(temp));
                     }
                     i++;
                 }
-            }catch (Throwable throwable){
-                Log.e("mainGetDb", throwable.toString());
             }
-    });
+        });
+    }
+
+    //StringBuilder or correct creation String temperature
+    public String createTemp(double temp){
+        return Math.round(temp) + " \u2103";
     }
 }

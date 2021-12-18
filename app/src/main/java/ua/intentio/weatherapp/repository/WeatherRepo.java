@@ -36,16 +36,12 @@ public class WeatherRepo {
         WeatherApiInterface apiService = WeatherApi.getApi();
 
         apiService.getWeatherByCityName(cityName).enqueue(new Callback<Weather>() {
-            Thread thread;
             @Override
             public void onResponse(@NonNull Call<Weather> call,
                                    @NonNull Response<Weather> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Weather weather = response.body();
-                    thread = new Thread(() -> {
-                        addWeatherToDb(weather);
-                        thread.interrupt();
-                    });
+                    Thread thread = new Thread(() -> addWeatherToDb(weather));
                     thread.start();
                     mutableLiveData.setValue(weather);
                 }
@@ -84,7 +80,7 @@ public class WeatherRepo {
         try {
             weatherDao.insert(weatherEntity);
         } catch (Throwable throwable) {
-            weatherDao.update(weatherEntity);
+            Log.e("repoAddToDb", throwable.toString());
         }
     }
 }

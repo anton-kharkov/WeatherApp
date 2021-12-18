@@ -3,8 +3,8 @@ package ua.intentio.weatherapp.repository.local;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
 
 import java.util.List;
 
@@ -15,9 +15,6 @@ public interface WeatherDao {
     @Query("SELECT * FROM weatherentity")
     LiveData<List<WeatherEntity>> getAll();
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(WeatherEntity weatherEntity);
-
-    @Update
-    void update(WeatherEntity weatherEntity);
 }
