@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             cityList.add("Днепр");
             cityList.add(cityName);
 
-            for (int i = 0; i < cityList.size(); ) {
+            for (int i = 0; i < cityList.size(); i++) {
                 weatherViewModel.requestWeatherFromRetrofit(cityList.get(i))
                         .observe(this, weather -> {
                             double temp = weather.getMain().getTemp();
@@ -92,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
                                     userTempView.setText(createTemp(temp));
                             }
                         });
-                i++;
             }
         }
     }
@@ -134,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         weatherViewModel.requestWeatherFromDb().getAll().observe(this, weatherEntities -> {
             if (weatherEntities.size() == 3) {
 
-                for (int i = 0; i < weatherEntities.size();) {
+                for (int i = 0; i < weatherEntities.size(); i++) {
 
                     String cityName = weatherEntities.get(i).getCityName();
                     double temp = weatherEntities.get(i).getTemperature();
@@ -152,14 +151,13 @@ public class MainActivity extends AppCompatActivity {
                             userCityView.setText(cityName);
                             userTempView.setText(createTemp(temp));
                     }
-                    i++;
                 }
             }
         });
     }
 
     //StringBuilder or correct creation String temperature
-    public String createTemp(double temp){
+    public String createTemp(double temp) {
         return Math.round(temp) + " \u2103";
     }
 }
